@@ -1,0 +1,40 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: my_test_1
+      id: my_test_1
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: my_test_1
+        setup-command: mvn compile
+        command: mvn -Dtest=TestHello test
+        timeout: 10
+        max-score: 20
+    - name: my_test_2
+      id: my_test_2
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: my_test_2
+        setup-command: mvn compile
+        command: mvn -Dtest=TestHello2 test
+        timeout: 10
+        max-score: 20
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        MY_TEST_1_RESULTS: "${{steps.my_test_1.outputs.result}}"
+        MY_TEST_2_RESULTS: "${{steps.my_test_2.outputs.result}}"
+      with:
+        runners: my_test_1,my_test_2
